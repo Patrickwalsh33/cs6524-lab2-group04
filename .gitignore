@@ -12,3 +12,6 @@
 .venv/
 *.mov
 __pycache__/
+raw/
+pyproject.toml
+uv.lock
