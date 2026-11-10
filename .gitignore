@@ -10,3 +10,5 @@
 *.synctex.gz
 
 .venv/
+*.mov
+__pycache__/
