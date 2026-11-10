@@ -1,6 +1,7 @@
 import glob
 import os
 
+from mypylibs.corners import detect_corners
 from mypylibs.frames import extract_calibration_frames
 
 ROOT_IN = 'in'
@@ -14,6 +15,10 @@ def process_camera(cam_id: str):
     frames = extract_calibration_frames(
         calib_video, n_frames=20,
         save_dir=os.path.join(ROOT_OUT, 'frames', cam_id))
+
+    # Step 2: detect + sub-pixel refine checkerboard corners
+    image_points, image_size = detect_corners(
+        frames, save_dir=os.path.join(ROOT_OUT, 'corners', cam_id))
 
 
 if __name__ == '__main__':
