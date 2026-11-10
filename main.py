@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from mypylibs import calibration
 from mypylibs.corners import detect_corners
 from mypylibs.frames import extract_calibration_frames
 
@@ -14,7 +15,12 @@ def process_camera(cam_id: str) -> None:
     frames = extract_calibration_frames(calib_video, n_frames=20, save_dir=ROOT_OUT / "frames" / cam_id)
 
     # Step 2: detect + sub-pixel refine checkerboard corners (image points + size feed step 3)
-    detect_corners(frames, save_dir=ROOT_OUT / "corners" / cam_id)
+    image_points, image_size = detect_corners(frames, save_dir=ROOT_OUT / "corners" / cam_id)
+
+    # Step 3: intrinsics K + distortion D, saved to out/XX_K.csv and out/XX_D.csv
+    cal = calibration.calibrate(image_points, image_size)
+    calibration.report(cal)
+    calibration.save(cal, ROOT_OUT, cam_id)
 
 
 if __name__ == "__main__":
