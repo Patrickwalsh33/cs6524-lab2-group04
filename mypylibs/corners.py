@@ -1,5 +1,3 @@
-"""Step 2: detect checkerboard inner corners and refine them to sub-pixel precision."""
-
 from pathlib import Path
 
 import cv2
@@ -19,13 +17,7 @@ def detect_corners(
     pattern: tuple[int, int] = PATTERN,
     save_dir: Path | None = None,
 ) -> tuple[list[Corners], tuple[int, int]]:
-    """Find the board's inner corners in each frame.
 
-    Returns:
-        image_points: list of (N, 1, 2) float32 arrays, one per frame where the board
-                      was found, N = pattern[0] * pattern[1].
-        image_size:   (width, height) of the frames, needed by calibrateCamera.
-    """
     image_points = []
     h, w = frames[0].shape[:2]
 
