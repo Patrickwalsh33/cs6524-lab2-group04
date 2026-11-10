@@ -1,5 +1,3 @@
-"""Step 1: extract sharp, diverse calibration frames from a checkerboard video."""
-
 from itertools import pairwise
 from pathlib import Path
 
@@ -9,7 +7,7 @@ from numpy.typing import NDArray
 
 type Image = NDArray[np.uint8]
 
-# Inner corners (columns, rows). The printed board has 9x6 squares -> 8x5 inner corners.
+# Inner corners (columns, rows). The board has 8x5 inner corners.
 PATTERN = (8, 5)
 
 
@@ -29,7 +27,7 @@ def read_video(path: Path) -> list[Image]:
 
 
 def sharpness(gray: Image) -> float:
-    """Variance of the Laplacian: higher means sharper (less motion blur)."""
+    #Variance of the Laplacian: higher means sharper (less motion blur).
     return cv2.Laplacian(gray, cv2.CV_64F).var()
 
 
@@ -39,13 +37,7 @@ def extract_calibration_frames(
     pattern: tuple[int, int] = PATTERN,
     save_dir: Path | None = None,
 ) -> list[Image]:
-    """Pick `n_frames` sharp frames, spread across the video, where the board is visible.
-
-    1. Score every frame by sharpness and keep only those where the board is found
-       (fast check, the precise corner extraction happens in step 2).
-    2. Split the video timeline into `n_frames` equal chunks and take the sharpest
-       candidate from each chunk, so the selected views cover the different poses.
-    """
+   
     frames = read_video(video_path)
 
     candidates: list[tuple[int, float]] = []  # (frame_index, sharpness)
