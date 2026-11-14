@@ -2,6 +2,7 @@ from pathlib import Path
 
 from mypylibs import calibration
 from mypylibs.corners import detect_corners
+from mypylibs.depth import process_scene
 from mypylibs.frames import extract_calibration_frames
 
 ROOT_IN = Path("in")
@@ -21,6 +22,10 @@ def process_camera(cam_id: str) -> None:
     cal = calibration.calibrate(image_points, image_size)
     calibration.report(cal)
     calibration.save(cal, ROOT_OUT, cam_id)
+
+    # Steps 5 + 6: inter-frame pose -> rectification -> disparity -> depth video out/XX-YY.mp4
+    for scene in sorted(ROOT_IN.glob(f"{cam_id}_[0-9][0-9].mp4")):
+        process_scene(scene, cal, ROOT_OUT / f"{scene.stem.replace('_', '-')}.mp4")
 
 
 if __name__ == "__main__":
