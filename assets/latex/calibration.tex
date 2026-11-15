@@ -1,0 +1,36 @@
+% ============================ OWNER: Patrick ===========================
+\section{Camera Calibration}
+% TODO(Patrick): method -- frame selection (board found with fast check, sharpest frame by Laplacian
+% variance per time chunk, 20 frames), findChessboardCorners + cornerSubPix (11x11 window),
+% object points on Z = 0 in cm, calibrateCamera, drop-worst-frame loop while error > 0.5 px.
+
+\begin{table}[t]
+\caption{Calibrated intrinsics and distortion (360$\times$640 px)}
+\label{tab:calib}
+\centering
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrr}
+\hline
+ & \textbf{Cam 01} & \textbf{Cam 02} & \textbf{Cam 03} \\
+\hline
+$f_x$ & 453.74 & 454.71 & 537.70 \\
+$f_y$ & 452.67 & 454.87 & 539.31 \\
+$c_x$ & 188.75 & 183.05 & 183.58 \\
+$c_y$ & 318.00 & 319.94 & 330.83 \\
+skew & 0 & 0 & 0 \\
+\hline
+$k_1$ & $-0.123$ & $0.303$ & $0.045$ \\
+$k_2$ & $6.365$ & $-10.158$ & $-1.576$ \\
+$k_3$ & $-115.29$ & $95.24$ & $10.16$ \\
+$p_1$ & $0.0007$ & $-0.0010$ & $0.0111$ \\
+$p_2$ & $0.0049$ & $0.0020$ & $-0.0047$ \\
+\hline
+Reproj. err. (px) & 0.219 & 0.189 & 0.139 \\
+\hline
+\end{tabular}
+\end{table}
+
+% TODO(Patrick): discussion -- all errors well under the 0.5 px target, but k2/k3 are huge and of
+% opposite sign between phones: the board never reached the image corners, so the high-order radial
+% terms are unconstrained (overfit). Consequence: undistorting frames hurt pose estimation, so the
+% depth stage uses K only (see Sec.~\ref{sec:depth}).

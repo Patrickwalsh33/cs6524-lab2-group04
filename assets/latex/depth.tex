@@ -1,0 +1,14 @@
+% ============================ OWNER: Darragh ===========================
+\section{Inter-frame Pose and Depth Estimation}
+\label{sec:depth}
+% TODO(Darragh): method -- SIFT + ratio test, findEssentialMat (5-point RANSAC) instead of F -> E,
+% recoverPose, pairs (t, t+10), reject pairs with |t_x| < 0.9 or rotation > 5 deg, stereoRectify +
+% remap, StereoSGBM (64 disparities, block 5), Z = f B / d, B = assumed 15 cm/s x 10/30 s = 5 cm.
+% Bonus: back-projected point cloud of a mid-video frame, dropping invalid / out-of-range / depth-edge pixels.
+
+% TODO(Darragh): figure(s) -- one depth frame per camera + CloudCompare screenshot (put PNGs in assets/latex/).
+
+\subsection{Discussion and Failure Analysis}
+% TODO(Darragh): scale ambiguity (||t|| = 1, cm only via assumed speed, depth jumps between pairs),
+% consecutive frames too close (tested gaps 5/10/15), F-route gave 180 deg flips, black left strip
+% (numDisparities), glass/blank walls in 01-01, moving people in 01-02, floor-dominated 02 scenes.
