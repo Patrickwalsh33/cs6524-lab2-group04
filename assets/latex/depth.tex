@@ -1,14 +1,49 @@
 % ============================ OWNER: Darragh ===========================
 \section{Inter-frame Pose and Depth Estimation}
 \label{sec:depth}
-% TODO(Darragh): method -- SIFT + ratio test, findEssentialMat (5-point RANSAC) instead of F -> E,
-% recoverPose, pairs (t, t+10), reject pairs with |t_x| < 0.9 or rotation > 5 deg, stereoRectify +
-% remap, StereoSGBM (64 disparities, block 5), Z = f B / d, B = assumed 15 cm/s x 10/30 s = 5 cm.
-% Bonus: back-projected point cloud of a mid-video frame, dropping invalid / out-of-range / depth-edge pixels.
 
-% TODO(Darragh): figure(s) -- one depth frame per camera + CloudCompare screenshot (put PNGs in assets/latex/).
+We pair each frame with the frame 10 steps later and match SIFT points
+between them. From these matches we get the essential matrix $E$, and from that, we get the camera's rotation
+$R$ and direction of movement $t$. We tried computing $E$ from $F$ as in the brief, but it gave more
+bad results, so we compute $E$ directly. We skip pairs where the camera turned more than 5$^\circ$ or
+did not move mostly sideways.
+
+Each pair is rectified so that matching points lie on the same row in both images.
+StereoSGBM then finds how far each pixel shifted between the two images (the disparity $d$), and
+depth is $Z = fB/d$. The camera motion only gives a direction, not a distance, so we assume the
+camera moved at a speed of 15\,cm/s, giving $B = 5$\,cm. Fig.~\ref{fig:depth} shows the result.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.9\textwidth]{fig_depth.png}
+\caption{Frame and depth map for 01-02 (left) and 02-02 (right). Black means no depth was found.}
+\label{fig:depth}
+\end{figure*}
+
+For the point cloud, we take one frame from the middle of each video and turn every pixel with a
+depth into a coloured 3D point. We drop points closer than 20\,cm or further than 5\,m, and points
+whose depth is very different from their neighbours, since those are probably errors at object edges
+(Fig.~\ref{fig:cloud}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\columnwidth]{fig_cloud.png}
+\caption{Point cloud of 01-02: the floor with the pillar, bag and jacket on it.}
+\label{fig:cloud}
+\end{figure}
 
 \subsection{Discussion and Failure Analysis}
-% TODO(Darragh): scale ambiguity (||t|| = 1, cm only via assumed speed, depth jumps between pairs),
-% consecutive frames too close (tested gaps 5/10/15), F-route gave 180 deg flips, black left strip
-% (numDisparities), glass/blank walls in 01-01, moving people in 01-02, floor-dominated 02 scenes.
+
+The biggest problem is that the cm scale is a guess. One camera cannot tell how far it moved, so every depth depends on
+our assumed 15\,cm/s. Hand speed also varies, so depths jump between frames: the bench in 01-01 reads
+about 100\,cm in one frame and 200\,cm in another.
+
+Neighbouring frames were also too close together. The camera moves only about 0.5\,cm between frames, so
+pixels barely shift and the results were unreliable. We mostly fixed this by using frames that were 10 frames apart.
+
+Correcting lens distortion made things worse. Our distortion values are unrealistically large
+(Table~\ref{tab:calib}), and correcting with them gave fewer usable pairs, so we skipped that.
+
+Finally, the left edge of each depth map is always empty, because those pixels have no
+match in the other image; this is why the shoe in 02-01 has no depth. Glass and plain walls in 01-01
+have nothing to match, people walk through 01-02, and our 02 scenes point at the floor.
