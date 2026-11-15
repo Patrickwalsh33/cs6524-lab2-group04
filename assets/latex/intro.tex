@@ -6,6 +6,12 @@ of us used our own phone, giving three cameras and six scenes: camera 01 is an i
 02 and 03 are Android phones.
 
 \section{Data Acquisition}
-% TODO(Andrew): phones used (01 iPhone, 02 Android, 03 ?), portrait 720x1280 @ 30 fps,
-% focus/exposure locked, board 9x6 squares (8x5 inner corners, s = 2.5 cm).
-% Pre-processing identical for every video: ffmpeg, half resolution -> 360x640, H.264, no audio.
+All videos were filmed in portrait with focus and exposure locked, and each phone's calibration
+and scene videos were filmed with the same lens. The checkerboard has $9\times6$ squares of
+2.5\,cm. OpenCV looks for the inner corners, so the pattern size is $8\times5$; using $9\times6$
+from the brief found nothing.
+
+To fit the 5\,MB limit, every video was scaled down to $360\times640$. Since $K$ is in pixels, each
+camera's scene videos had to be scaled exactly the same way as its calibration video. Camera 03
+recorded at $1080\times1920$ and was scaled to one third; cameras 01 and 02 were
+halved from $720\times1280$.
