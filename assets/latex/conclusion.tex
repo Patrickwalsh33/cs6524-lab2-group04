@@ -1,5 +1,14 @@
 % ============================ OWNER: Andrew ============================
 \section{Improvements With More Time}
-% TODO(Andrew): concrete steps, e.g. recover metric scale from an object of known size or the
-% calibration board in the scene; re-record calibration covering image corners (or fix k3);
-% use more than two frames (bundle adjustment / temporal filtering of depth); WLS disparity filtering.
+\textbf{Real scale.} Our depths depend on guessing that the camera moved at 15\,cm/s. If the
+checkerboard were placed in each scene, \texttt{solvePnP} could give the camera's real position in
+both frames, so we could measure how far it moved instead of guessing.
+
+\textbf{Better calibration videos.} Our $k_2$ and $k_3$ values are far too large because the board
+never reached the corners of the image. Recording again with the board moved into every corner, and
+fixing $k_3=0$, should give distortion values we could actually use.
+
+\textbf{Using more frames.} Each depth map comes from just two frames, so it flickers. Combining
+several pairs would make it steadier and fill gaps, such as the plain wall in 03-01, where only 89
+of 143 pairs were usable.
+
