@@ -1,8 +1,24 @@
 % ============================ OWNER: Patrick ===========================
 \section{Camera Calibration}
-% TODO(Patrick): method -- frame selection (board found with fast check, sharpest frame by Laplacian
-% variance per time chunk, 20 frames), findChessboardCorners + cornerSubPix (11x11 window),
-% object points on Z = 0 in cm, calibrateCamera, drop-worst-frame loop while error > 0.5 px.
+
+Each calibration video has around 200 frames, many of them blurry or nearly identical, so we pick
+20. Every frame is first checked with a quick \texttt{findChessboardCorners} pass to make sure the
+whole board is visible, and given a sharpness score, the variance of its Laplacian, since motion
+blur weakens edges. The video is then split into 20 equal chunks and the sharpest frame in each is
+kept. Since the board was moving the whole time, frames from different chunks show it from different
+angles. Our first version threw away the blurrier half of the frames before choosing, which left
+some chunks empty. The gaps were filled with five back-to-back frames from the start of the video,
+which add almost nothing.
+
+On the chosen frames we run the full corner detection and refine each corner with
+\texttt{cornerSubPix} in an $11\times11$ window. The squares are only about 20\,px wide at our
+resolution, so a bigger window could reach into the next square. The matching 3D points are the
+$8\times5$ grid $(2.5i, 2.5j, 0)$\,cm on the board plane. Using cm here means that once we have a
+baseline in cm, depth also comes out in cm. \texttt{calibrateCamera} then fits $K$ and the
+distortion coefficients using the standard pinhole model with radial and tangential
+distortion~\cite{foundationsCVbook}. We report the mean distance between the detected corners and
+the reprojected ones rather than the RMS value that \texttt{calibrateCamera} returns. If the mean
+were above 0.5\,px, the code would drop the worst frame and fit again, but this never happened.
 
 \begin{table}[t]
 \caption{Calibrated intrinsics and distortion (360$\times$640 px)}
@@ -30,7 +46,18 @@ Reproj. err. (px) & 0.219 & 0.189 & 0.139 \\
 \end{tabular}
 \end{table}
 
-% TODO(Patrick): discussion -- all errors well under the 0.5 px target, but k2/k3 are huge and of
-% opposite sign between phones: the board never reached the image corners, so the high-order radial
-% terms are unconstrained (overfit). Consequence: undistorting frames hurt pose estimation, so the
-% depth stage uses K only (see Sec.~\ref{sec:depth}).
+Table~\ref{tab:calib} shows the results. $K$ looks sensible for all three phones: $f_x \approx f_y$,
+the principal point is within about 10\,px of the image centre (180, 320), and skew is 0 because
+OpenCV assumes it by default. Cam~03 has a longer focal length, giving about a 37$^\circ$ horizontal
+field of view against 43$^\circ$ for the other two, so its main camera is simply a bit narrower.
+
+The distortion coefficients are a different story. Every error is well below the 0.5\,px target,
+but $k_2$ and $k_3$ are huge ($k_3$ reaches $-115$ for Cam~01) and change sign from one phone to
+the next, which real phone lenses would not do. When we checked where the detected corners fell, they only covered the middle of the frame
+(roughly $x$ 105--280 and $y$ 250--383 out of $360\times640$ for Cam~01), because we held the board
+at about the same distance throughout and it never got near the edges. Distortion matters most at the
+edges, so the fit is free to pick any high-order terms that happen to match the centre. Fixing
+$k_3 = 0$ shows this: the error stayed exactly the same while $k_2$ jumped to compensate. A low
+reprojection error therefore only tells us the model fits the corners we gave it, not that it is
+right across the whole image. For this reason the depth stage uses $K$ alone and does not undistort
+the frames (Sec.~\ref{sec:depth}).
