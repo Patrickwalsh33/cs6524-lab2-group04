@@ -31,7 +31,11 @@
 \maketitle
 
 \begin{abstract}
-% TODO(Andrew): 3-4 sentences -- what was done, key result, main lesson. Write last.
+We calibrated our three phone cameras using a printed checkerboard, then we used each camera to estimate
+depth by filming a video while moving sideways and treating two frames as a stereo pair. 
+This calibration worked well, with errors under 0.25\,px for all three phones, and the depth maps show
+near and far objects in the right places. The main problem is that the distances in centimetres
+depend on a guess of how fast the camera was moving.
 \end{abstract}
 
 % Each section lives in its own file (owner noted at the top) to avoid merge conflicts.
